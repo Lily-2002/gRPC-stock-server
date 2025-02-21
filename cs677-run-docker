@@ -1,5 +1,7 @@
 #! /bin/bash
 
+version="1.1"
+
 maindir=""
 destdir=lab1
 
@@ -121,38 +123,43 @@ fi
 
 netarg=
 if test `uname` = Darwin; then
-    if ! netstat -n -a -p tcp | grep '\.6169[  ].*LISTEN' >/dev/null; then
+    if ! netstat -n -a -p tcp | grep '\.6169[[:blank:]].*LISTEN' >/dev/null; then
         netarg="$netarg "'--expose=6169/tcp -p 6169:6169/tcp'
     fi
-    if ! netstat -n -a -p tcp | grep '\.12949[ 	].*LISTEN' >/dev/null; then
+    if ! netstat -n -a -p tcp | grep '\.12949[[:blank:]].*LISTEN' >/dev/null; then
         netarg="$netarg "'--expose=12949/tcp -p 12949:12949/tcp'
-    elif ! netstat -n -a -p tcp | grep '\.12950[ 	].*LISTEN' >/dev/null; then
+    elif ! netstat -n -a -p tcp | grep '\.12950[[:blank:]].*LISTEN' >/dev/null; then
         netarg="$netarg "'--expose=12950/tcp -p 12950:12950/tcp'
-    elif ! netstat -n -a -p tcp | grep '\.12951[ 	].*LISTEN' >/dev/null; then
+    elif ! netstat -n -a -p tcp | grep '\.12951[[:blank:]].*LISTEN' >/dev/null; then
         netarg="$netarg "'--expose=12951/tcp -p 12951:12951/tcp'
-    elif ! netstat -n -a -p tcp | grep '\.12952[ 	].*LISTEN' >/dev/null; then
-        netarg="$netarg "'--expose=12952/tcp -p 12952:12952/tcp'  
-    elif ! netstat -n -a -p tcp | grep '\.12953[ 	].*LISTEN' >/dev/null; then
-        netarg="$netarg "'--expose=12953/tcp -p 12953:12953/tcp'
-    elif ! netstat -n -a -p tcp | grep '\.12954[ 	].*LISTEN' >/dev/null; then
-        netarg="$netarg "'--expose=12954/tcp -p 12954:12954/tcp'          
+    elif ! netstat -n -a -p tcp | grep '\.12952[[[:blank:]].*LISTEN' >/dev/null; then
+        netarg="$netarg "'--expose=12952/tcp -p 12952:12952/tcp'
     fi
 elif test -x /bin/netstat; then
-    if ! netstat -n -a -p tcp | grep '\.6169[  ].*LISTEN' >/dev/null; then
+    if ! netstat -n -l -t | grep ':6169[[:blank:]].*LISTEN' >/dev/null; then
         netarg="$netarg "'--expose=6169/tcp -p 6169:6169/tcp'
     fi
-    if ! netstat -n -l -t | grep ':12949[ 	]' >/dev/null; then
+    if ! netstat -n -l -t | grep ':12949[[:blank:]].*LISTEN' >/dev/null; then
         netarg="$netarg "'--expose=12949/tcp -p 12949:12949/tcp'
-    elif ! netstat -n -a -p tcp | grep '\.12950[ 	].*LISTEN' >/dev/null; then
+    elif ! netstat -n -l -t | grep ':12950[[:blank:]].*LISTEN' >/dev/null; then
         netarg="$netarg "'--expose=12950/tcp -p 12950:12950/tcp'
-    elif ! netstat -n -a -p tcp | grep '\.12951[ 	].*LISTEN' >/dev/null; then
+    elif ! netstat -n -l -t | grep ':12951[[:blank:]].*LISTEN' >/dev/null; then
         netarg="$netarg "'--expose=12951/tcp -p 12951:12951/tcp'
-    elif ! netstat -n -a -p tcp | grep '\.12952[ 	].*LISTEN' >/dev/null; then
+    elif ! netstat -n -l -t | grep ':12952[[:blank:]].*LISTEN' >/dev/null; then
         netarg="$netarg "'--expose=12952/tcp -p 12952:12952/tcp'
-    elif ! netstat -n -a -p tcp | grep '\.12953[ 	].*LISTEN' >/dev/null; then
-        netarg="$netarg "'--expose=12953/tcp -p 12953:12953/tcp'
-    elif ! netstat -n -a -p tcp | grep '\.12954[ 	].*LISTEN' >/dev/null; then
-        netarg="$netarg "'--expose=12954/tcp -p 12954:12954/tcp'     
+    fi
+elif test -x /c/Windows/system32/netstat; then
+    if ! netstat -n -a -p tcp | grep ':6169[[:blank:]].*LISTEN' >/dev/null; then
+        netarg="$netarg "'--expose=6169/tcp -p 6169:6169/tcp'
+    fi
+    if ! netstat -n -a -p tcp | grep ':12949[[:blank:]].*LISTEN' >/dev/null; then
+        netarg="$netarg "'--expose=12949/tcp -p 12949:12949/tcp'
+    elif ! netstat -n -a -p tcp | grep ':12950[[:blank:]].*LISTEN' >/dev/null; then
+        netarg="$netarg "'--expose=12950/tcp -p 12950:12950/tcp'
+    elif ! netstat -n -a -p tcp | grep ':12951[[:blank:]].*LISTEN' >/dev/null; then
+        netarg="$netarg "'--expose=12951/tcp -p 12951:12951/tcp'
+    elif ! netstat -n -a -p tcp | grep ':12952[[:blank:]].*LISTEN' >/dev/null; then
+        netarg="$netarg "'--expose=12952/tcp -p 12952:12952/tcp'
     fi
 fi
 
