@@ -1,7 +1,7 @@
 FROM ubuntu:noble
 #FROM ubuntu/python:3.12-24.04_stable
 
-ENV VERSION=1.1
+ENV VERSION=1.1.1
 
 # set environment variables for tzdata
 ARG TZ=America/New_York
@@ -81,7 +81,8 @@ RUN apt-get -y install\
 RUN apt-get -y install\
  openjdk-11-jdk\
  openjdk-11-doc\
- openjdk-11-jre-headless
+ openjdk-11-jre-headless\
+ maven
 
 # set up rsync, rpcbind
 RUN apt-get -y install\
