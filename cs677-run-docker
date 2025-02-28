@@ -161,6 +161,8 @@ elif test -x /c/Windows/system32/netstat; then
     elif ! netstat -n -a -p tcp | grep ':12952[[:blank:]].*LISTEN' >/dev/null; then
         netarg="$netarg "'--expose=12952/tcp -p 12952:12952/tcp'
     fi
+else
+    echo "Port forwarding is not set up due to netstat not detected" 1>&2
 fi
 
 if test -n "$maindir"; then
