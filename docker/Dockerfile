@@ -1,7 +1,7 @@
 FROM ubuntu:noble
 #FROM ubuntu/python:3.12-24.04_stable
 
-ENV VERSION=1.1.1
+ENV VERSION=1.2
 
 # set environment variables for tzdata
 ARG TZ=America/New_York
