@@ -1,6 +1,6 @@
 #! /bin/bash
 
-version="1.1.1"
+version="1.2"
 
 maindir=""
 destdir=lab1
@@ -109,7 +109,7 @@ if test -n "$container"; then
         exit 1
     fi
 elif test -n "$maindir" -a -z "$fresh"; then
-    existing_image="`docker ps -f status=running -f ancestor=$tag -f volume=/host_mnt"$maindir" --no-trunc --format "{{.CreatedAt}},{{.ID}}" | sort -r | head -n 1`"
+    existing_image="`docker ps -f status=running -f ancestor=$tag --no-trunc --format "{{.CreatedAt}},{{.ID}}" | sort -r | head -n 1`"
 fi
 if test -n "$existing_image"; then
     created_at="`echo $existing_image | sed 's/,.*//'`"
@@ -118,7 +118,7 @@ if test -n "$existing_image"; then
     echo "* Using running container $image12, created $created_at" 1>&2
     echo "- To start a new container, exit then \`cs677-run-docker -f\`" 1>&2
     echo "- To kill this container, exit then \`docker kill $image12\`" 1>&2
-    vexec docker exec -it$sshenvarg $image /bin/bash
+    MSYS_NO_PATHCONV=1 vexec docker exec -it$sshenvarg $image /bin/bash
 fi
 
 netarg=
