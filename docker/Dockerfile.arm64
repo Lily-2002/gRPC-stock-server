@@ -1,6 +1,8 @@
 FROM ubuntu:noble
 #FROM ubuntu/python:3.12-24.04_stable
 
+ENV VERSION=1.2
+
 # set environment variables for tzdata
 ARG TZ=America/New_York
 ENV TZ=${TZ}
@@ -88,7 +90,8 @@ RUN apt-get -y install\
 RUN apt-get -y install\
  openjdk-11-jdk\
  openjdk-11-doc\
- openjdk-11-jre-headless
+ openjdk-11-jre-headless\
+ maven
 
 # set up rsync, rpcbind
 RUN apt-get -y install\
@@ -159,7 +162,9 @@ RUN rm -r /var/lib/apt/lists/*
 
 # set up passwordless sudo for user cs677-user
 ARG UID=1001
-RUN useradd -m -s /bin/bash -u "${UID}" cs677-user &&\
+RUN userdel -r ubuntu
+RUN addgroup --gid "${UID}" cs677-user
+RUN useradd -m -s /bin/bash -u "${UID}" -g "${UID}" cs677-user &&\
  echo "cs677-user ALL=(ALL:ALL) NOPASSWD: ALL" > /etc/sudoers.d/cs677-init
 
 # create binary reporting version of dockerfile
