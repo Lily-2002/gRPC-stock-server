@@ -19,9 +19,11 @@ org/example/grpc/UpdateRequest.class
 org/example/grpc/StockServiceGrpc$StockServiceBlockingStub.class
 org/example/grpc/StockServiceGrpc$StockServiceBaseDescriptorSupplier.class
 org/example/grpc/StockServiceGrpc$2.class
+org/example/LoadTest.class
 org/example/StockServer.class
 org/example/grpc/LookupResponseOrBuilder.class
 org/example/grpc/LookupResponse$1.class
+org/example/LoadTest$Metrics.class
 org/example/StockServer$StockInfo.class
 org/example/grpc/TradeRequestOrBuilder.class
 org/example/StockClient.class
@@ -29,6 +31,7 @@ org/example/grpc/StockServiceGrpc$1.class
 org/example/grpc/TradeResponse.class
 org/example/grpc/TradeType.class
 org/example/grpc/StockServiceGrpc$MethodHandlers.class
+org/example/LoadTest$TestClient.class
 org/example/StockServer$StockService.class
 org/example/grpc/StockServiceGrpc$StockServiceBlockingV2Stub.class
 org/example/grpc/StockServiceGrpc$StockServiceFileDescriptorSupplier.class
