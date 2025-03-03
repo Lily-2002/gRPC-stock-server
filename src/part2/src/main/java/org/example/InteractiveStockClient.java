@@ -2,15 +2,15 @@ package org.example;
 
 import io.grpc.Channel;
 import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
+import io.grpc.netty.NettyChannelBuilder;
 import org.example.grpc.*;
 
+import java.net.InetSocketAddress;
 import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 
 public class InteractiveStockClient {
     private final StockServiceGrpc.StockServiceBlockingStub blockingStub;
-    private static final String[] AVAILABLE_STOCKS = {"GameStart", "RottenFishCo", "BoarCo", "MenhirCo"};
 
     public InteractiveStockClient(Channel channel) {
         blockingStub = StockServiceGrpc.newBlockingStub(channel);
@@ -47,7 +47,7 @@ public class InteractiveStockClient {
                     result = "successful";
                     break;
                 case 0:
-                    result = "suspended";
+                    result = "suspended (exceeded maximum trading volume)";
                     break;
                 case -1:
                     result = "invalid stock";
@@ -55,101 +55,93 @@ public class InteractiveStockClient {
                 default:
                     result = "unknown status";
             }
-            System.out.printf("Trade %s for %s: %s%n",
-                    type.toString(), stockName, result);
+            System.out.printf("Trade %s %d shares of %s: %s%n",
+                    type.toString(), quantity, stockName, result);
         } catch (Exception e) {
             System.err.println("RPC failed: " + e.getMessage());
         }
     }
 
-    private void printHelp() {
-        System.out.println("\nAvailable commands:");
-        System.out.println("1. lookup <stockName> - Look up the price and volume of a stock");
-        System.out.println("2. buy <stockName> <quantity> - Buy a specified quantity of a stock");
-        System.out.println("3. sell <stockName> <quantity> - Sell a specified quantity of a stock");
-        System.out.println("4. list - List all available stocks");
-        System.out.println("5. help - Show this help message");
-        System.out.println("6. exit - Exit the program");
-        System.out.println("\nAvailable stocks: GameStart, RottenFishCo, BoarCo, MenhirCo");
-    }
-
-    private void listStocks() {
-        System.out.println("\nAvailable stocks:");
-        for (String stock : AVAILABLE_STOCKS) {
-            lookup(stock);
-        }
-    }
-
-    public void interactiveMode() {
+    public void runInteractive() {
         Scanner scanner = new Scanner(System.in);
-        System.out.println("Welcome to Stock Trading System");
-        printHelp();
+        System.out.println("Welcome to Interactive Stock Trading System!");
+        System.out.println("Available commands:");
+        System.out.println("  lookup <stock_name>");
+        System.out.println("  trade <stock_name> <quantity> <buy|sell>");
+        System.out.println("  quit");
 
         while (true) {
-            System.out.print("\nEnter command: ");
+            System.out.print("> ");
             String line = scanner.nextLine().trim();
-            String[] parts = line.split("\\s+");
+            if (line.isEmpty()) continue;
 
-            if (parts.length == 0) continue;
+            String[] parts = line.split("\\s+");
+            String command = parts[0].toLowerCase();
 
             try {
-                switch (parts[0].toLowerCase()) {
+                switch (command) {
                     case "lookup":
                         if (parts.length != 2) {
-                            System.out.println("Usage: lookup <stockName>");
+                            System.out.println("Usage: lookup <stock_name>");
                             continue;
                         }
                         lookup(parts[1]);
                         break;
 
-                    case "buy":
-                        if (parts.length != 3) {
-                            System.out.println("Usage: buy <stockName> <quantity>");
+                    case "trade":
+                        if (parts.length != 4) {
+                            System.out.println("Usage: trade <stock_name> <quantity> <buy|sell>");
                             continue;
                         }
-                        trade(parts[1], Integer.parseInt(parts[2]), TradeType.BUY);
-                        break;
-
-                    case "sell":
-                        if (parts.length != 3) {
-                            System.out.println("Usage: sell <stockName> <quantity>");
-                            continue;
+                        try {
+                            String stockName = parts[1];
+                            int quantity = Integer.parseInt(parts[2]);
+                            String typeStr = parts[3].toUpperCase();
+                            TradeType type;
+                            
+                            if (typeStr.equals("BUY")) {
+                                type = TradeType.BUY;
+                            } else if (typeStr.equals("SELL")) {
+                                type = TradeType.SELL;
+                            } else {
+                                System.out.println("Invalid trade type. Use 'buy' or 'sell'");
+                                continue;
+                            }
+                            
+                            trade(stockName, quantity, type);
+                        } catch (NumberFormatException e) {
+                            System.out.println("Invalid quantity. Please enter a number.");
                         }
-                        trade(parts[1], Integer.parseInt(parts[2]), TradeType.SELL);
                         break;
 
-                    case "list":
-                        listStocks();
-                        break;
-
-                    case "help":
-                        printHelp();
-                        break;
-
-                    case "exit":
+                    case "quit":
                         System.out.println("Goodbye!");
                         return;
 
                     default:
-                        System.out.println("Unknown command. Type 'help' for available commands.");
+                        System.out.println("Unknown command. Available commands: lookup, trade, quit");
                 }
-            } catch (NumberFormatException e) {
-                System.out.println("Error: Quantity must be a valid number");
             } catch (Exception e) {
-                System.out.println("Error: " + e.getMessage());
+                System.err.println("Error: " + e.getMessage());
             }
         }
     }
 
     public static void main(String[] args) throws InterruptedException {
-        String target = "172.23.42.196:50053";
-        System.out.println("Connecting to server at " + target);
-        ManagedChannel channel = ManagedChannelBuilder.forTarget(target)
+        if (args.length != 2) {
+            System.out.println("Usage: InteractiveStockClient <host> <port>");
+            System.exit(1);
+        }
+
+        String host = args[0];
+        int port = Integer.parseInt(args[1]);
+        System.out.println("Connecting to server at " + host + ":" + port);
+        ManagedChannel channel = NettyChannelBuilder.forAddress(new InetSocketAddress(host, port))
                 .usePlaintext()
                 .build();
         try {
             InteractiveStockClient client = new InteractiveStockClient(channel);
-            client.interactiveMode();
+            client.runInteractive();
         } finally {
             channel.shutdownNow().awaitTermination(5, TimeUnit.SECONDS);
         }
