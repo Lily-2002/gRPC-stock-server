@@ -1,0 +1,19 @@
+version: '3.8'
+services:
+  stock-server:
+    build: .
+    ports:
+      - "50053:50053"
+    volumes:
+      - ./:/app
+    command: sh -c "mvn clean package && java -cp 'target/part2-1.0-SNAPSHOT.jar;target/dependency/*' org.example.StockServer"
+    networks:
+      stock-net:
+        ipv4_address: 172.23.42.196
+
+networks:
+  stock-net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.23.42.0/24 

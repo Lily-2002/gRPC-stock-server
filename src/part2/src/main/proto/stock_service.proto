@@ -1,0 +1,59 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "org.example.grpc";
+option java_outer_classname = "StockServiceProto";
+
+package stockservice;
+
+// Service definition
+service StockService {
+  // Lookup stock price and volume
+  rpc Lookup (LookupRequest) returns (LookupResponse) {}
+  
+  // Trade stocks (buy/sell)
+  rpc Trade (TradeRequest) returns (TradeResponse) {}
+  
+  // Update stock price
+  rpc Update (UpdateRequest) returns (UpdateResponse) {}
+}
+
+// Request message for stock lookup
+message LookupRequest {
+  string stock_name = 1;
+}
+
+// Response message for stock lookup
+message LookupResponse {
+  double price = 1;
+  int32 volume = 2;
+}
+
+// Trade type enum
+enum TradeType {
+  BUY = 0;
+  SELL = 1;
+}
+
+// Request message for stock trade
+message TradeRequest {
+  string stock_name = 1;
+  int32 quantity = 2;
+  TradeType trade_type = 3;
+}
+
+// Response message for stock trade
+message TradeResponse {
+  int32 status = 1; // 1: success, 0: suspended, -1: invalid stock
+}
+
+// Request message for stock price update
+message UpdateRequest {
+  string stock_name = 1;
+  double price = 2;
+}
+
+// Response message for stock price update
+message UpdateResponse {
+  int32 status = 1; // 1: success, -1: invalid stock, -2: invalid price
+} 
