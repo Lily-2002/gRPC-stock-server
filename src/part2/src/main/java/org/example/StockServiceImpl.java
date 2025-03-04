@@ -71,4 +71,20 @@ public class StockServiceImpl extends StockServiceGrpc.StockServiceImplBase {
         responseObserver.onNext(response.build());
         responseObserver.onCompleted();
     }
+}
+
+class StockInfo {
+    private double price;
+    private int volume;
+    private final int maxVolume;  // 添加最大交易量限制
+
+    public StockInfo(double price, int maxVolume) {
+        this.price = price;
+        this.volume = 0;
+        this.maxVolume = maxVolume;
+    }
+
+    public synchronized boolean canTrade(int quantity) {
+        return volume + quantity <= maxVolume;
+    }
 } 
