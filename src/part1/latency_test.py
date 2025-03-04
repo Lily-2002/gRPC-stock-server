@@ -85,7 +85,7 @@ def ploter(results, filename):
         # convert to milliseconds
         latencies.append(l * 1000)
     
-    #I use ChatGPT here
+    #I used ChatGPT here
     plt.figure(figsize=(8, 5))
     plt.plot(clients, latencies, 'o-')
     plt.title('Latency vs Number of Clients')
