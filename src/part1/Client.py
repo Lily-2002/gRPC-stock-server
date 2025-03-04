@@ -4,39 +4,28 @@ import random
 import time
 import sys
 
-def find_price(stock_name, server_host='localhost', server_port=8889):
-    #connect
-    client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    start = time.time()  
-    try:
-        client.connect((server_host, server_port))
-        request = f"Lookup {stock_name}" 
-        client.send(request.encode('utf-8'))
-        price = client.recv(1024).decode('utf-8')
-        latency = time.time() - start
-        print(f"Stock price for {stock_name}: {price} (latency: {latency:.4f}s)")
-        
-    except Exception as e:
-        print(f"Error: {e}")
-    finally:
-        client.close()
-
-def run_client(num_requests=5):
-    # list of stocks we can look up
-    stocks = ["GameStart", "RottenFishCo", "UnknownStock"]
-    
+def run_client(num_requests=5, server_port=8889):
+    stocks = ["GameStart", "RottenFishCo", "UnknownStock"] # Unknown is added for simulate real world cases
     # send multiple requests
     for _ in range(num_requests):
+        #establish a socket for each request
+        client = socket.socket()
+        
+        client.connect(('localhost', server_port))
         #simulate the situation by randomly choosing a stock to read its price
         stock = random.choice(stocks)
-        find_price(stock)
-        # wait a bit between requests
+        request = f"Lookup {stock}"
+        client.send(request.encode('utf-8'))
+        #respond "price" from Server
+        respond = client.recv(1024).decode('utf-8')
+        # simulate the real world situation
+        print(f"Stock price for {stock}: {respond}")
         time.sleep(0.5)
+        client.close()
 
 if __name__ == "__main__":
     clients, requests = 3, 5  #default setting
-    
-    #we can input the num of clients and requests each client for testing
+    #input the num of clients and requests for testing
     if len(sys.argv) > 1:
         clients = int(sys.argv[1])
         if len(sys.argv) > 2:
@@ -48,12 +37,11 @@ if __name__ == "__main__":
     for i in range(clients):
         p = multiprocessing.Process(
             target=run_client, 
-            args=(requests,)
+            args=(requests, 8889)
         )
         processes.append(p)
         p.start()
 
     for p in processes:
         p.join()
-    
-    print("finished")
+    print("Client finished")
