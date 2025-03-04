@@ -25,15 +25,19 @@ mvn clean package
 ```
 2. Start the server:
 ```bash
-java -cp target/part2-1.0-SNAPSHOT-jar-with-dependencies.jar org.example.StockServer 172.17.0.3 50054 GameStart=2000 RottenFishCo=1000 BoarCo=1500 MenhirCo=3000
+java -cp target/part2-1.0-SNAPSHOT-jar-with-dependencies.jar org.example.StockServer <server_host> <server_port> GameStart=<stock_price> RottenFishCo=<stock_price> BoarCo=<stock_price> MenhirCo=<stock_price>
 ```
 3. Start the no interactive client:
 ```bash
-java -cp target/part2-1.0-SNAPSHOT-jar-with-dependencies.jar org.example.StockClient 172.17.0.3 50054
+java -cp target/part2-1.0-SNAPSHOT-jar-with-dependencies.jar org.example.StockClient <server_host> <server_port>
 ```
 1. Start the interactive client:
 ```bash
-java -cp target/part2-1.0-SNAPSHOT-jar-with-dependencies.jar org.example.InteractiveStockClient 172.17.0.3 50054
+java -cp target/part2-1.0-SNAPSHOT-jar-with-dependencies.jar org.example.InteractiveStockClient <server_host> <server_port>
+```
+## Evaluation of Part2
+```bash
+java -cp target/part2-1.0-SNAPSHOT-jar-with-dependencies.jar org.example.LoadTest <server_host> <server_port>
 ```
 Human Write Code:
 1. StockServer.java 
