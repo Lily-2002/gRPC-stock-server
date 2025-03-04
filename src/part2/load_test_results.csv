@@ -1,0 +1,11 @@
+NumClients,OperationType,AvgLatency,TotalOperations,TestDuration
+1,Lookup,1380.09,1000,2071
+2,Lookup,1163.72,1999,1430
+3,Lookup,981.25,2995,1303
+4,Lookup,933.47,3995,1280
+5,Lookup,841.15,4997,1210
+1,Trade,666.93,1000,1135
+2,Trade,670.64,1998,1142
+3,Trade,733.90,2971,1154
+4,Trade,748.79,3962,1160
+5,Trade,828.17,4970,1192

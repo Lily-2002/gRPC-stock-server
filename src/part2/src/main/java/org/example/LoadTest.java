@@ -8,163 +8,170 @@ import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.Random;
 import io.grpc.Channel;
-import org.example.grpc.StockServiceGrpc;
-import org.example.grpc.StockServiceProto;
-import org.example.grpc.LookupRequest;
-import org.example.grpc.LookupResponse;
-import org.example.grpc.TradeRequest;
-import org.example.grpc.TradeResponse;
-import org.example.grpc.TradeType;
+import java.io.*;
 
 public class LoadTest {
-    private static final int MAX_TEST_DURATION_SECONDS = 60;
-    private static final int OPERATIONS_PER_CLIENT = 1000;
+    private static final int REQUESTS_PER_CLIENT = 100;  
     private static final String[] TEST_STOCKS = {"GameStart", "BoarCo"};
     
-    static class Metrics {
-        private final AtomicInteger totalOperations = new AtomicInteger(0);
-        private final ConcurrentLinkedQueue<Long> lookupLatencies = new ConcurrentLinkedQueue<>();
-        private final ConcurrentLinkedQueue<Long> tradeLatencies = new ConcurrentLinkedQueue<>();
+    private static class ClientProcess {
+        private final String host;
+        private final int port;
+        private final boolean isLookup;
+        private final int clientId;
+        private final String resultFile;
         
-        public void recordLookupLatency(long latencyMicros) {
-            lookupLatencies.add(latencyMicros);
-            totalOperations.incrementAndGet();
+        public ClientProcess(String host, int port, boolean isLookup, int clientId) {
+            this.host = host;
+            this.port = port;
+            this.isLookup = isLookup;
+            this.clientId = clientId;
+            this.resultFile = String.format("client_%d_%s.txt", 
+                clientId, isLookup ? "lookup" : "trade");
         }
         
-        public void recordTradeLatency(long latencyMicros) {
-            tradeLatencies.add(latencyMicros);
-            totalOperations.incrementAndGet();
-        }
-        
-        public double getAverageLookupLatency() {
-            return lookupLatencies.stream().mapToLong(Long::longValue).average().orElse(0.0);
-        }
-        
-        public double getAverageTradeLatency() {
-            return tradeLatencies.stream().mapToLong(Long::longValue).average().orElse(0.0);
-        }
-        
-        public int getTotalOperations() {
-            return totalOperations.get();
-        }
-    }
-    
-    static class TestClient implements Runnable {
-        private final Random random;
-        private final boolean lookupOnly;
-        private final Metrics metrics;
-        private final Channel channel;
-        private final StockServiceGrpc.StockServiceBlockingStub stub;
-        
-        public TestClient(String host, int port, boolean lookupOnly, Metrics metrics) {
-            this.random = new Random();
-            this.lookupOnly = lookupOnly;
-            this.metrics = metrics;
-            this.channel = NettyChannelBuilder.forAddress(new InetSocketAddress(host, port))
-                .usePlaintext()
-                .build();
-            this.stub = StockServiceGrpc.newBlockingStub(channel);
-        }
-        
-        private void doLookup() {
-            String stock = TEST_STOCKS[random.nextInt(TEST_STOCKS.length)];
-            long startTime = System.nanoTime();
-            try {
-                LookupRequest request = LookupRequest.newBuilder()
-                    .setStockName(stock)
-                    .build();
-                stub.lookup(request);
-                long latencyMicros = (System.nanoTime() - startTime) / 1000;
-                metrics.recordLookupLatency(latencyMicros);
-            } catch (Exception e) {
-                System.err.println("Lookup failed: " + e.getMessage());
-            }
-        }
-        
-        private void doTrade() {
-            String stock = TEST_STOCKS[random.nextInt(TEST_STOCKS.length)];
-            int quantity = random.nextInt(100) + 1;
-            TradeType tradeType = random.nextBoolean() ? TradeType.BUY : TradeType.SELL;
-            
-            long startTime = System.nanoTime();
-            try {
-                TradeRequest request = TradeRequest.newBuilder()
-                    .setStockName(stock)
-                    .setQuantity(quantity)
-                    .setTradeType(tradeType)
-                    .build();
-                stub.trade(request);
-                long latencyMicros = (System.nanoTime() - startTime) / 1000;
-                metrics.recordTradeLatency(latencyMicros);
-            } catch (Exception e) {
-                System.err.println("Trade failed: " + e.getMessage());
-            }
-        }
-        
-        @Override
         public void run() {
-            int operationsCompleted = 0;
-            long startTime = System.currentTimeMillis();
+            List<Double> latencies = new ArrayList<>();
+            Random random = new Random();
             
-            while (operationsCompleted < OPERATIONS_PER_CLIENT &&
-                   (System.currentTimeMillis() - startTime) < MAX_TEST_DURATION_SECONDS * 1000) {
-                if (lookupOnly || random.nextBoolean()) {
-                    doLookup();
-                } else {
-                    doTrade();
-                }
-                operationsCompleted++;
+            // Simple sequential requests
+            for (int i = 0; i < REQUESTS_PER_CLIENT; i++) {
+                ManagedChannel channel = null;
+                long startTime = System.nanoTime();  // Start timing before connection establishment
                 
                 try {
-                    Thread.sleep(10); // Add small delay between operations
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    break;
+                    // Create new connection
+                    channel = NettyChannelBuilder.forAddress(new InetSocketAddress(host, port))
+                        .usePlaintext()
+                        .build();
+                    StockServiceGrpc.StockServiceBlockingStub stub = StockServiceGrpc.newBlockingStub(channel);
+                    
+                    String stock = TEST_STOCKS[random.nextInt(TEST_STOCKS.length)];
+                    if (isLookup) {
+                        LookupRequest request = LookupRequest.newBuilder()
+                            .setStockName(stock)
+                            .build();
+                        LookupResponse response = stub.lookup(request);
+                        if (response.getPrice() >= 0) {
+                            long endTime = System.nanoTime();  // End timing after request completion
+                            latencies.add((endTime - startTime) / 1_000_000.0);  // Convert to milliseconds
+                        }
+                    } else {
+                        int quantity = random.nextInt(10) + 1;
+                        TradeType tradeType = random.nextBoolean() ? TradeType.BUY : TradeType.SELL;
+                        TradeRequest request = TradeRequest.newBuilder()
+                            .setStockName(stock)
+                            .setQuantity(quantity)
+                            .setTradeType(tradeType)
+                            .build();
+                        TradeResponse response = stub.trade(request);
+                        if (response.getStatus() == 1) {
+                            long endTime = System.nanoTime();  // End timing after request completion
+                            latencies.add((endTime - startTime) / 1_000_000.0);  // Convert to milliseconds
+                        }
+                    }
+                } catch (Exception e) {
+                    System.err.println("Request failed: " + e.getMessage());
+                } finally {
+                    if (channel != null) {
+                        channel.shutdown();
+                    }
                 }
             }
             
-            if (channel instanceof ManagedChannel) {
-                ((ManagedChannel) channel).shutdown();
+            // Write results to file
+            try (PrintWriter writer = new PrintWriter(new FileWriter(resultFile))) {
+                for (double latency : latencies) {
+                    writer.println(latency);
+                }
+            } catch (IOException e) {
+                System.err.println("Failed to write results: " + e.getMessage());
             }
         }
     }
     
-    private static void runLoadTest(String host, int port, int numClients, boolean lookupOnly) {
-        System.out.printf("Starting load test with %d clients (%s operations)%n",
-            numClients, lookupOnly ? "lookup-only" : "mixed");
-        
-        ExecutorService executor = Executors.newFixedThreadPool(numClients);
-        Metrics metrics = new Metrics();
-        CountDownLatch latch = new CountDownLatch(numClients);
-        
-        for (int i = 0; i < numClients; i++) {
-            executor.submit(() -> {
-                try {
-                    new TestClient(host, port, lookupOnly, metrics).run();
-                } finally {
-                    latch.countDown();
-                }
-            });
-        }
+    private static double runTest(String host, int port, int numClients, boolean isLookup) {
+        List<Process> processes = new ArrayList<>();
+        List<String> resultFiles = new ArrayList<>();
+        CountDownLatch startSignal = new CountDownLatch(1);
         
         try {
-            latch.await();
-            System.out.printf("Test completed with %d total operations%n", metrics.getTotalOperations());
-            if (!lookupOnly) {
-                System.out.printf("Average trade latency: %.2f microseconds%n", metrics.getAverageTradeLatency());
+            // Start all client processes
+            for (int i = 0; i < numClients; i++) {
+                String resultFile = String.format("client_%d_%s.txt", 
+                    i, isLookup ? "lookup" : "trade");
+                resultFiles.add(resultFile);
+                
+                // Build command line arguments
+                List<String> command = new ArrayList<>();
+                command.add("java");
+                command.add("-cp");
+                command.add(System.getProperty("java.class.path"));
+                command.add(LoadTest.class.getName());
+                command.add("--client");
+                command.add(host);
+                command.add(String.valueOf(port));
+                command.add(String.valueOf(i));
+                command.add(String.valueOf(isLookup));
+                
+                ProcessBuilder pb = new ProcessBuilder(command);
+                Process p = pb.start();
+                processes.add(p);
             }
-            System.out.printf("Average lookup latency: %.2f microseconds%n", metrics.getAverageLookupLatency());
-        } catch (InterruptedException e) {
-            System.err.println("Test interrupted");
+            
+            // A short delay to ensure all processes are ready
+            Thread.sleep(500);
+            
+            // Wait for all processes to complete
+            for (Process p : processes) {
+                p.waitFor();
+            }
+            
+            // Collect all latency data
+            List<Double> allLatencies = new ArrayList<>();
+            for (String file : resultFiles) {
+                try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        allLatencies.add(Double.parseDouble(line));
+                    }
+                }
+                new File(file).delete();  // Clean up temporary files
+            }
+            
+            // Calculate average latency
+            return allLatencies.stream()
+                .mapToDouble(Double::doubleValue)
+                .average()
+                .orElse(0.0);
+                
+        } catch (Exception e) {
+            System.err.println("Test failed: " + e.getMessage());
+            return 0.0;
         } finally {
-            executor.shutdown();
+            // Ensure all processes are terminated
+            for (Process p : processes) {
+                p.destroyForcibly();
+            }
         }
     }
     
     public static void main(String[] args) {
+        // If this is a client process
+        if (args.length > 0 && args[0].equals("--client")) {
+            String host = args[1];
+            int port = Integer.parseInt(args[2]);
+            int clientId = Integer.parseInt(args[3]);
+            boolean isLookup = Boolean.parseBoolean(args[4]);
+            
+            ClientProcess client = new ClientProcess(host, port, isLookup, clientId);
+            client.run();
+            return;
+        }
+        
+        // Main process
         if (args.length != 2) {
             System.err.println("Usage: LoadTest <host> <port>");
             System.exit(1);
@@ -173,15 +180,28 @@ public class LoadTest {
         String host = args[0];
         int port = Integer.parseInt(args[1]);
         
-        // Run tests with different numbers of clients
-        for (int numClients = 1; numClients <= 5; numClients++) {
-            System.out.println("\n=== Testing with " + numClients + " clients ===");
-            
-            // Test lookup-only operations
-            runLoadTest(host, port, numClients, true);
-            
-            // Test mixed operations
-            runLoadTest(host, port, numClients, false);
+        System.out.println("\n=== Load Test Results ===");
+        System.out.println("All latencies are in milliseconds (ms)");
+        System.out.println("\nClients | Lookup (ms) | Trade (ms)");
+        System.out.println("---------|------------|----------");
+        
+        try {
+            // Test with different numbers of clients
+            for (int numClients = 1; numClients <= 5; numClients++) {
+                // Test lookup and trade separately
+                double lookupLatency = runTest(host, port, numClients, true);
+                Thread.sleep(1000);  // Cool down between tests
+                
+                double tradeLatency = runTest(host, port, numClients, false);
+                Thread.sleep(1000);  // Cool down between tests
+                
+               
+                System.out.printf("%-8d | %-10.3f | %-9.3f%n", 
+                    numClients, lookupLatency, tradeLatency);
+            }
+        } catch (InterruptedException e) {
+            System.err.println("Test interrupted");
+            Thread.currentThread().interrupt();
         }
     }
 } 

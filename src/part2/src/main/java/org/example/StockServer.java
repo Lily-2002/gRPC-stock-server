@@ -16,6 +16,7 @@ public class StockServer {
     private final Server server;
     private final int port;
     private final String host;
+    private static final int THREAD_POOL_SIZE = 10;  // 固定线程池大小
 
     private static class StockInfo {
         double price;
@@ -34,8 +35,8 @@ public class StockServer {
         this.host = host;
         server = NettyServerBuilder.forPort(port)
                 .addService(new StockService(initialStocks))
-                .executor(Executors.newCachedThreadPool())
-                .maxConcurrentCallsPerConnection(100)
+                .executor(Executors.newFixedThreadPool(THREAD_POOL_SIZE))  // 使用固定大小的线程池
+                .maxConcurrentCallsPerConnection(THREAD_POOL_SIZE)  // 限制并发连接数
                 .build();
     }
 
@@ -174,10 +175,10 @@ public class StockServer {
 
         // Parse initial stock prices from command line arguments
         // Format: stockName=price
-        for (int i = 2; i < args.length; i++) {
-            String[] parts = args[i].split("=");
-            if (parts.length == 2) {
-                String stockName = parts[0];
+                    for (int i = 2; i < args.length; i++) {
+                        String[] parts = args[i].split("=");
+                        if (parts.length == 2) {
+                            String stockName = parts[0];
                 double price = Double.parseDouble(parts[1]);
                 int maxVolume = 1000; // 默认最大交易量为1000
                 initialStocks.put(stockName, new StockInfo(price, maxVolume));
@@ -190,4 +191,4 @@ public class StockServer {
         server.start();
         server.blockUntilShutdown();
     }
-}
+} 
