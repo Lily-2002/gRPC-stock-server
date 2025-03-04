@@ -1,11 +1,11 @@
 # Server
 
-![server](C:\Users\fulian\Downloads\server.jpg)
+![](https://raw.githubusercontent.com/Lily-2002/Pictures/main/202503040056332.png)
 
 # Client（no interactive）
 
-![client](C:\Users\fulian\Downloads\client.jpg)
+![](https://raw.githubusercontent.com/Lily-2002/Pictures/main/202503040057730.png)
 
 # # Client (interactive)
 
-![interactive](C:\Users\fulian\Downloads\interactive.jpg)
+![](https://raw.githubusercontent.com/Lily-2002/Pictures/main/202503040057305.png)

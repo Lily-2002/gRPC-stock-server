@@ -25,6 +25,32 @@ This pattern indicates that:
 
 The data confirms that load increases do impact response time, with a non-linear relationship becoming apparent as we approach system capacity.
 
+
+
+From our measurements for Part 2, we observe a clear pattern:
+
+Steady increase from 1 to 3 clients:
+
+- Lookup latency: 6.001ms → 8.872ms (~48% increase)
+- Trade latency: 6.682ms → 9.178ms (~37% increase)
+
+Sustained growth from 3 to 4 clients:
+
+- Lookup latency: 8.872ms → 10.366ms (~17% increase)
+- Trade latency: 9.178ms → 10.322ms (~12% increase)
+
+Noticeable jump from 4 to 5 clients:
+
+- Lookup latency: 10.366ms → 13.338ms (~29% increase)
+
+- Trade latency: 10.322ms → 13.546ms (~31% increase)
+
+  The system exhibits an approximately linear increase in latency up to 4 clients, indicating it can handle moderate loads without drastic performance degradation.
+
+  At 5 clients, latency increases more sharply, but the jump is not as extreme as a total system overload would suggest. Instead of a sudden breakdown, we see a progressive slow-down.
+
+  This suggests that the system does not hit a strict bottleneck at 4 clients but does experience increased queuing or resource contention at 5 clients.
+
 ### 3. How does the latency of lookup compare to trade?
 
 In Part 1, we only implemented the Lookup operation, so we cannot directly compare Lookup and Trade latencies. However, for Part 2, we would expect Trade operations to have higher latency than Lookup operations due to:
@@ -60,29 +86,3 @@ Our performance evaluation demonstrates the trade-offs between the two implement
    - More robust features and type safety
    - Better scalability with dynamic thread pool
 
-The choice between these approaches would depend on specific application requirements, balancing raw performance against developer productivity and advanced features.
-Lookup vs Trade Latency Comparison:
-For 1 client: Lookup (1.071ms) is faster than Trade (1.345ms), showing about 25% difference
-For 2-5 clients: The latencies are very similar, with differences of less than 5%
-Overall, there isn't a consistent pattern showing one operation being significantly faster than the other
-Impact of Client Load on Latency:
-The latency doesn't show a clear linear increase with more clients
-Unexpected pattern: latency actually decreases in some cases with more clients
-1 client: ~1.071ms (lookup), ~1.345ms (trade)
-2 clients: ~0.872ms (lookup), ~0.833ms (trade)
-5 clients: ~0.762ms (lookup), ~0.786ms (trade)
-This suggests that the system might be benefiting from some caching or warm-up effects
-Synchronization Impact:
-The similar latencies between lookup and trade operations suggest that the synchronization overhead might not be the dominant factor
-If read-write locks were effectively implemented, we would expect:
-Lookup operations to be significantly faster (using read locks)
-Trade operations to be slower (using write locks)
-Increased contention with more clients for trade operations
-The results don't show these expected patterns, suggesting either:
-The synchronization mechanism might not be using read-write locks
-Other factors (like network latency or processing overhead) might be dominating the synchronization costs
-Unexpected Observations:
-The latency improvement with more clients is counterintuitive
-Both operations showing very similar latencies suggests they might be using the same type of synchronization
-The relatively stable latency across different client loads suggests good scalability but might indicate that the system isn't fully utilizing concurrent operations
-These results suggest that while the system is handling multiple clients, it might not be implementing read-write lock differentiation between lookup and trade operations as effectively as it could. The similar latencies between operations and lack of significant degradation with more clients might indicate room for optimization in the synchronization strategy.
