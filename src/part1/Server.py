@@ -4,11 +4,10 @@ from ThreadPool import ThreadPool
 
 def start_server(port, thread_count=4):
     # create socket
-    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1) #this line is by CHATGPT
+    server = socket.socket()
     server.bind(('localhost', port))
     server.listen(5)
-    print(f"Server is running on port {port} with {thread_count} threads...")
+    print(f"Server is running on port {port} with {thread_count} threads")
     thread_pool = ThreadPool(thread_count)
     #server loop
     while True:
@@ -20,6 +19,7 @@ def start_server(port, thread_count=4):
 if __name__ == "__main__":
     port, thread = 8889, 4  # default settings
     #we can input the port and thread_count we want for testing
+
     if len(sys.argv) > 1:
         port = int(sys.argv[1])
         if len(sys.argv) > 2:
