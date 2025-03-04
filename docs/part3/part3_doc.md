@@ -61,3 +61,28 @@ Our performance evaluation demonstrates the trade-offs between the two implement
    - Better scalability with dynamic thread pool
 
 The choice between these approaches would depend on specific application requirements, balancing raw performance against developer productivity and advanced features.
+Lookup vs Trade Latency Comparison:
+For 1 client: Lookup (1.071ms) is faster than Trade (1.345ms), showing about 25% difference
+For 2-5 clients: The latencies are very similar, with differences of less than 5%
+Overall, there isn't a consistent pattern showing one operation being significantly faster than the other
+Impact of Client Load on Latency:
+The latency doesn't show a clear linear increase with more clients
+Unexpected pattern: latency actually decreases in some cases with more clients
+1 client: ~1.071ms (lookup), ~1.345ms (trade)
+2 clients: ~0.872ms (lookup), ~0.833ms (trade)
+5 clients: ~0.762ms (lookup), ~0.786ms (trade)
+This suggests that the system might be benefiting from some caching or warm-up effects
+Synchronization Impact:
+The similar latencies between lookup and trade operations suggest that the synchronization overhead might not be the dominant factor
+If read-write locks were effectively implemented, we would expect:
+Lookup operations to be significantly faster (using read locks)
+Trade operations to be slower (using write locks)
+Increased contention with more clients for trade operations
+The results don't show these expected patterns, suggesting either:
+The synchronization mechanism might not be using read-write locks
+Other factors (like network latency or processing overhead) might be dominating the synchronization costs
+Unexpected Observations:
+The latency improvement with more clients is counterintuitive
+Both operations showing very similar latencies suggests they might be using the same type of synchronization
+The relatively stable latency across different client loads suggests good scalability but might indicate that the system isn't fully utilizing concurrent operations
+These results suggest that while the system is handling multiple clients, it might not be implementing read-write lock differentiation between lookup and trade operations as effectively as it could. The similar latencies between operations and lack of significant degradation with more clients might indicate room for optimization in the synchronization strategy.

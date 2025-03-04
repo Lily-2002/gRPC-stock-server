@@ -1,0 +1,12 @@
+cs677-user@a9911e7e4a25:~/lab1/src/part2$ java -cp target/part2-1.0-SNAPSHOT-jar-with-dependencies.jar org.example.LoadTest 172.17.0.2 50054
+
+=== Load Test Results ===
+All latencies are in milliseconds (ms)
+
+Clients | Lookup (ms) | Trade (ms)
+---------|------------|----------
+1        | 1.071      | 1.345    
+2        | 0.872      | 0.833    
+3        | 0.885      | 0.849    
+4        | 1.021      | 1.020    
+5        | 0.762      | 0.786    
