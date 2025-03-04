@@ -1,11 +1,11 @@
 import threading
 from queue import Queue
 
-# AI TOOL used here
-# For this part, I use ChatGPT for creating the frame of the functions the I implemented the functions by myself.
+#ChatGPT is used for framing the whole class. However, the functions are implemented by my own.
 class ThreadPool:
     def __init__(self, thread_count):
-        self.taskQ = Queue()
+        #blocking queue for tasks
+        self.blockingQ = Queue() 
         self.threads = []
         self.stocks = {
             "GameStart": 15.99,
@@ -18,40 +18,48 @@ class ThreadPool:
             thread.start()
             self.threads.append(thread)
 
+    #what each worker thread does
     def work_imple(self):
         while True:
-            c_socket, addr = self.taskQ.get()
+            # get a task from the queue (blocked until a task is available)
+            c_socket, addr = self.blockingQ.get()
             if c_socket is None:
-                self.taskQ.task_done()
+                self.blockingQ.task_done()
                 break
-            try:
-                self.client_proxy(c_socket)
-            except Exception as e:
-                print(f"Error handling client: {e}")
-            finally:
-                self.taskQ.task_done()
+            # handle the client request
+            self.client_proxy(c_socket)
+            self.blockingQ.task_done()
 
+    # add a new task to the queue
     def task_adder(self, c_socket, addr):
-        self.taskQ.put((c_socket, addr))
+        self.blockingQ.put((c_socket, addr))
 
+    # shut down the thread pool
     def shut_down(self):
+        # send None to each thread to exit
         for _ in self.threads:
-            self.taskQ.put((None, None))
+            self.blockingQ.put((None, None))
+        # wait for all threads to finish
         for thread in self.threads:
             thread.join()
 
+
     def client_proxy(self, c_socket):
         request = c_socket.recv(1024).decode('utf-8')
+        # split the request into 2 parts
         splitted = request.strip().split()
         call_func = splitted[0]
         name = splitted[1]
         if call_func == "Lookup":
+            # look up the stock price and send back
             c_socket.send(str(self.lookup(name)).encode('utf-8'))
         else:
-            c_socket.send(b"invalid")
+            c_socket.send(b"invalid request")
 
+        # close the socket
         c_socket.close()
 
+    # look up the corresponding stock price
     def lookup(self, stock):
         if stock in self.stocks:
             return self.stocks[stock]
