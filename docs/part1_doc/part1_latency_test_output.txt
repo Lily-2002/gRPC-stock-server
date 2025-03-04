@@ -1,0 +1,55 @@
+(base) leotang@leodebijibendiannao part1 % python latency_test.py
+######### Running latency tests #########
+
+--- Testing with 1 clients ---
+Testing with 1 clients making 1000 requests each
+Client 0 starting 1000 requests
+Client 0 avg latency: 0.11604666709899902 ms
+Average latency: 0.11604666709899902 ms
+
+--- Testing with 2 clients ---
+Testing with 2 clients making 1000 requests each
+Client 1 starting 1000 requests
+Client 0 starting 1000 requests
+Client 1 avg latency: 0.13541603088378906 ms
+Client 0 avg latency: 0.13392925262451172 ms
+Average latency: 0.1346726417541504 ms
+
+--- Testing with 3 clients ---
+Testing with 3 clients making 1000 requests each
+Client 0 starting 1000 requests
+Client 1 starting 1000 requests
+Client 2 starting 1000 requests
+Client 0 avg latency: 0.16097021102905273 ms
+Client 1 avg latency: 0.16045379638671875 ms
+Client 2 avg latency: 0.15825819969177246 ms
+Average latency: 0.15989406903584796 ms
+
+--- Testing with 4 clients ---
+Testing with 4 clients making 1000 requests each
+Client 0 starting 1000 requests
+Client 1 starting 1000 requests
+Client 2 starting 1000 requests
+Client 3 starting 1000 requests
+Client 0 avg latency: 0.1868126392364502 ms
+Client 1 avg latency: 0.18677663803100586 ms
+Client 2 avg latency: 0.18387961387634277 ms
+Client 3 avg latency: 0.18278098106384277 ms
+Average latency: 0.1850624680519104 ms
+
+--- Testing with 5 clients ---
+Testing with 5 clients making 1000 requests each
+Client 2 starting 1000 requests
+Client 3 starting 1000 requests
+Client 1 starting 1000 requests
+Client 0 starting 1000 requests
+Client 4 starting 1000 requests
+Error: [Errno 54] Connection reset by peer
+Client 2 avg latency: 0.2693321704864502 ms
+Client 3 avg latency: 0.27014756202697754 ms
+Client 1 avg latency: 0.267719030380249 ms
+Client 0 avg latency: 0.2752718925476074 ms
+Client 4 avg latency: 0.3019620229054738 ms
+Average latency: 0.27688151956868423 ms
+
+Evaluation completed!

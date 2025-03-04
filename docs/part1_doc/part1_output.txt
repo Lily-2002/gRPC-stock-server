@@ -1,0 +1,42 @@
+(base) leotang@leodebijibendiannao part1 % python Server.py
+Server is running on port 8889 with 4 threads
+Accepted connection from ('127.0.0.1', 61329)
+Accepted connection from ('127.0.0.1', 61330)
+Accepted connection from ('127.0.0.1', 61331)
+Accepted connection from ('127.0.0.1', 61332)
+Accepted connection from ('127.0.0.1', 61333)
+Accepted connection from ('127.0.0.1', 61334)
+Accepted connection from ('127.0.0.1', 61335)
+Accepted connection from ('127.0.0.1', 61336)
+Accepted connection from ('127.0.0.1', 61337)
+Accepted connection from ('127.0.0.1', 61338)
+Accepted connection from ('127.0.0.1', 61339)
+Accepted connection from ('127.0.0.1', 61340)
+Accepted connection from ('127.0.0.1', 61342)
+Accepted connection from ('127.0.0.1', 61343)
+Accepted connection from ('127.0.0.1', 61344)
+
+
+
+
+
+
+(base) leotang@leodebijibendiannao part1 % python Client.py 
+starting 3 clients with 5 requests each
+Stock price for UnknownStock: -1
+Stock price for GameStart: 15.99
+Stock price for GameStart: 15.99
+Stock price for RottenFishCo: 10.5
+Stock price for GameStart: 15.99
+Stock price for RottenFishCo: 10.5
+Stock price for UnknownStock: -1
+Stock price for RottenFishCo: 10.5
+Stock price for RottenFishCo: 10.5
+Stock price for UnknownStock: -1
+Stock price for GameStart: 15.99
+Stock price for RottenFishCo: 10.5
+Stock price for GameStart: 15.99
+Stock price for RottenFishCo: 10.5
+Stock price for RottenFishCo: 10.5
+Client finished
+
