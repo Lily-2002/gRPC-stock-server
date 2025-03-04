@@ -4,16 +4,16 @@ import random
 import time
 import sys
 
-def request_stock_price(stock_name, server_host='localhost', server_port=8889):
+def find_price(stock_name, server_host='localhost', server_port=8889):
+    #connect
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    start_time = time.time()  
-    
+    start = time.time()  
     try:
         client.connect((server_host, server_port))
-        request = f"Lookup {stock_name}"
+        request = f"Lookup {stock_name}" 
         client.send(request.encode('utf-8'))
         price = client.recv(1024).decode('utf-8')
-        latency = time.time() - start_time
+        latency = time.time() - start
         print(f"Stock price for {stock_name}: {price} (latency: {latency:.4f}s)")
         
     except Exception as e:
@@ -22,30 +22,37 @@ def request_stock_price(stock_name, server_host='localhost', server_port=8889):
         client.close()
 
 def run_client(num_requests=5):
+    # list of stocks we can look up
     stocks = ["GameStart", "RottenFishCo", "UnknownStock"]
+    
+    # send multiple requests
     for _ in range(num_requests):
+        #simulate the situation by randomly choosing a stock to read its price
         stock = random.choice(stocks)
-        request_stock_price(stock)
+        find_price(stock)
+        # wait a bit between requests
         time.sleep(0.5)
 
 if __name__ == "__main__":
-    num_clients = 3  #default
-    requests_per_client = 5
+    clients, requests = 3, 5  #default setting
     
+    #we can input the num of clients and requests each client for testing
     if len(sys.argv) > 1:
-        num_clients = int(sys.argv[1])
+        clients = int(sys.argv[1])
         if len(sys.argv) > 2:
-            requests_per_client = int(sys.argv[2])
+            requests = int(sys.argv[2])
     
-    print(f"starting {num_clients} clients with {requests_per_client} requests each")
+    print(f"starting {clients} clients with {requests} requests each")
+    #start client processes
     processes = []
-    for i in range(num_clients):
+    for i in range(clients):
         p = multiprocessing.Process(
             target=run_client, 
-            args=(requests_per_client,)
+            args=(requests,)
         )
         processes.append(p)
         p.start()
+
     for p in processes:
         p.join()
     
