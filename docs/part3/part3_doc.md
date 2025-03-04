@@ -1,4 +1,5 @@
 
+## Analysis
 
 ### 1. How does the latency of Lookup compare across part 1 and part 2? Is one more efficient than the other?
 
