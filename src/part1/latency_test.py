@@ -23,12 +23,9 @@ def client_process(host, port, num_requests, result_queue, client_id):
             stock = random.choice(stocks)
             request = f"Lookup {stock}"
             s.send(request.encode('utf-8'))
-            response = s.recv(1024)
             end = time.time()
             latency = end - start
             latencies.append(latency)
-            if i % 100 == 0:
-                print("Client", client_id, "request", i, "latency:", latency)
                 
         except Exception as e:
             print("Error:", e)
@@ -38,9 +35,9 @@ def client_process(host, port, num_requests, result_queue, client_id):
     # calculate average latency
     avg = sum(latencies) / len(latencies)
     result_queue.put((client_id, avg, latencies))
-    print("Client", client_id, "done with avg latency:", avg)
+    print("Client", client_id, "avg latency:", avg * 1000, "ms")
 
-# test with multiple clients
+# test with multiple clients and have test results
 def run_test(host, port, clients_count, request_num):
     print("Testing with", clients_count, "clients making", request_num, "requests each")
     results = Queue()
@@ -65,10 +62,7 @@ def run_test(host, port, clients_count, request_num):
     avg_latency = sum(all_latencies) / len(all_latencies)
     
     #print results
-    print("Number of clients:", clients_count)
-    print("Requests per client:", request_num)
-    print("Total requests:", clients_count * request_num)
-    print("Average latency:", avg_latency, "seconds")
+    print("Average latency:", avg_latency * 1000, "ms")
     return avg_latency
 
 # run tests with different numbers of clients
@@ -119,5 +113,5 @@ if __name__ == "__main__":
     with open('results/latency_data.csv', 'w') as f:
         f.write('clients,latency_ms\n')
         for c, l in results:
-            f.write(f'{c},{l*1000}\n')
+            f.write(f'{c},{l * 1000}\n')
     print("\nEvaluation completed!")
