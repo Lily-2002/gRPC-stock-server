@@ -8,6 +8,7 @@ import org.example.grpc.*;
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
 import java.util.logging.Logger;
 
 public class StockServer {
@@ -33,6 +34,8 @@ public class StockServer {
         this.host = host;
         server = NettyServerBuilder.forPort(port)
                 .addService(new StockService(initialStocks))
+                .executor(Executors.newCachedThreadPool())
+                .maxConcurrentCallsPerConnection(100)
                 .build();
     }
 

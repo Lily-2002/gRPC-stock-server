@@ -31,7 +31,11 @@ public class StockClient {
                         stockName, response.getPrice(), response.getVolume());
             }
         } catch (Exception e) {
-            System.err.println("RPC failed: " + e.getMessage());
+            System.err.println("RPC failed: " + e.getClass().getName() + ": " + e.getMessage());
+            if (e.getCause() != null) {
+                System.err.println("Caused by: " + e.getCause().getMessage());
+            }
+            e.printStackTrace();
         }
     }
 
@@ -60,7 +64,11 @@ public class StockClient {
             System.out.printf("Trade %s for %s: %s%n",
                     type.toString(), stockName, result);
         } catch (Exception e) {
-            System.err.println("RPC failed: " + e.getMessage());
+            System.err.println("RPC failed: " + e.getClass().getName() + ": " + e.getMessage());
+            if (e.getCause() != null) {
+                System.err.println("Caused by: " + e.getCause().getMessage());
+            }
+            e.printStackTrace();
         }
     }
 
