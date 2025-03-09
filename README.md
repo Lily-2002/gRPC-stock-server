@@ -1,6 +1,4 @@
-# Part2
-The part2 is implemented by Lian Fu.
-The part2 is a stock trading system based on gRPC. The code is constructed by Maven. 
+The project is a stock trading system based on gRPC. The code is constructed by Maven. 
 The structure of the system:
 ```text
 part2/
@@ -39,15 +37,6 @@ java -cp target/part2-1.0-SNAPSHOT-jar-with-dependencies.jar org.example.Interac
 ```bash
 java -cp target/part2-1.0-SNAPSHOT-jar-with-dependencies.jar org.example.LoadTest <server_host> <server_port>
 ```
-Human Write Code:
-1. StockServer.java 
-2. StockServiceImpl.java
-3. Stock.java
-4. StockClient.java
-   
-AI assisted generation:
-1. interactiveStockClient.java
-2. LoadTest.java
-3. The shell and bat files used to test code
+
 
 
